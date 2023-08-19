@@ -231,7 +231,7 @@ class Aperture {
 	}
 }
 
-module.exports = () => new Aperture();
+module.exports = (binPath) => new Aperture(binPath);
 
 module.exports.screens = async (binPath) => {
 	const {stderr} = await execa(binPath || DEFAULT_BIN, ['list', 'screens']);

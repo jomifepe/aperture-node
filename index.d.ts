@@ -104,7 +104,7 @@ declare namespace aperture {
 	}
 }
 
-declare const aperture: (() => aperture.Recorder) & {
+declare const aperture: ((binPath: string) => aperture.Recorder) & {
 	/**
 	Get a list of available video codecs.
 
