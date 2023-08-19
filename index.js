@@ -13,7 +13,7 @@ const log = debuglog('aperture');
 const getRandomId = () => Math.random().toString(36).slice(2, 15);
 
 // Workaround for https://github.com/electron/electron/issues/9459
-const BIN = path.join(electronUtil.fixPathForAsarUnpack(__dirname), 'aperture');
+const DEFAULT_BIN = path.join(electronUtil.fixPathForAsarUnpack(__dirname), 'aperture');
 
 const supportsHevcHardwareEncoding = (() => {
 	const cpuModel = os.cpus()[0].model;
@@ -35,8 +35,11 @@ const supportsHevcHardwareEncoding = (() => {
 })();
 
 class Aperture {
-	constructor() {
+	bin;
+
+	constructor(binPath) {
 		macosVersion.assertGreaterThanOrEqualTo('10.13');
+		this.bin = binPath || DEFAULT_BIN;
 	}
 
 	startRecording({
@@ -138,7 +141,7 @@ class Aperture {
 			})();
 
 			this.recorder = execa(
-				BIN, [
+				this.bin, [
 					'record',
 					'--process-id',
 					this.processId,
@@ -159,7 +162,7 @@ class Aperture {
 
 	async waitForEvent(name, parse) {
 		const {stdout} = await execa(
-			BIN, [
+			this.bin, [
 				'events',
 				'listen',
 				'--process-id',
@@ -176,7 +179,7 @@ class Aperture {
 
 	async sendEvent(name, parse) {
 		const {stdout} = await execa(
-			BIN, [
+			this.bin, [
 				'events',
 				'send',
 				'--process-id',
@@ -230,8 +233,8 @@ class Aperture {
 
 module.exports = () => new Aperture();
 
-module.exports.screens = async () => {
-	const {stderr} = await execa(BIN, ['list', 'screens']);
+module.exports.screens = async (binPath) => {
+	const {stderr} = await execa(binPath || DEFAULT_BIN, ['list', 'screens']);
 
 	try {
 		return JSON.parse(stderr);
@@ -241,7 +244,7 @@ module.exports.screens = async () => {
 };
 
 module.exports.audioDevices = async () => {
-	const {stderr} = await execa(BIN, ['list', 'audio-devices']);
+	const {stderr} = await execa(binPath || DEFAULT_BIN, ['list', 'audio-devices']);
 
 	try {
 		return JSON.parse(stderr);
